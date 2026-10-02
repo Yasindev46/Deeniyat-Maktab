@@ -44,7 +44,7 @@ export function StudentTable({ students, mode, onToggle, onEdit, loading }) {
                   <>
                     <td>{student.mobile || '—'}</td>
                     <td><StatusBadge status={student.today_status} /></td>
-                    <td><button className="button button-small button-plain" onClick={() => onEdit(student)}>Edit</button></td>
+                    <td><button className="button-edit button-small button-plain" onClick={() => onEdit(student)}>Edit</button></td>
                   </>
                 )
                 : (

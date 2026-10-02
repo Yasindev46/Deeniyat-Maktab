@@ -5,7 +5,7 @@ const apiBaseUrl = import.meta.env.DEV
 export async function request(path, options = {}) {
   const response = await fetch(`${apiBaseUrl}/api${path}`, options);
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
+  if (!response.ok) throw new Error(data.error || `Please try again later.`);
   return data;
 }
 
