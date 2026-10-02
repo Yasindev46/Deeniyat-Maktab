@@ -5,7 +5,7 @@ export default function FeeModal({ student, onClose, onSubmit, busy }) {
     event.preventDefault();
     const values = new FormData(event.currentTarget);
     await onSubmit(student, {
-      paid_amount: values.get('paid_amount'),
+       paid_amount:(student.paid_amount + parseFloat(values.get('paid_amount'))),
       notes: values.get('notes'),
     });
   }
@@ -17,8 +17,8 @@ export default function FeeModal({ student, onClose, onSubmit, busy }) {
         <p className="eyebrow">FEE RECORD</p>
         <h2>Manage payment</h2>
         <p className="modal-student">{student.name} <span>· #{student.sr} · {student.class}</span></p>
-        <label>Amount paid (₹)<input name="paid_amount" type="number" min="0" max="2400" step="0.01" defaultValue={student.paid_amount} required /></label>
-        <label>Notes<input name="notes" type="text" defaultValue={student.notes} placeholder="Optional payment note" /></label>
+        <label>Amount paid (₹)<input name="paid_amount" type="number" min="0" max="2400" step="0.01" required /></label>
+        <label>Notes & Date<input name="notes" type="text" defaultValue={student.notes} placeholder="Optional payment note" /></label>
         <div className="modal-actions">
           <button type="button" className="button button-plain" onClick={onClose}>Cancel</button>
           <button className="button button-primary" disabled={busy}>{busy ? 'Saving…' : 'Save payment'}</button>

@@ -18,9 +18,9 @@ export default function AttendanceView({ students, loading, busy, onToggle, onMa
   return (
     <>
       <section className="stats-grid">
-        <StatCard label="Students in view" value={visibleStudents.length} detail={classFilter === 'All' ? 'Across all classes' : classFilter} tone="blue" />
+        <StatCard label="Total students" value={visibleStudents.length} detail={classFilter === 'All' ? 'Across all classes' : classFilter} tone="blue" />
         <StatCard label="Present today" value={attendanceCount} detail={`${visibleStudents.length ? Math.round((attendanceCount / visibleStudents.length) * 100) : 0}% attendance`} tone="green" />
-        <StatCard label="Not marked present" value={visibleStudents.length - attendanceCount} detail="Can be finalized as absent" tone="orange" />
+        <StatCard label="Absent today" value={visibleStudents.length - attendanceCount} detail="Can be finalized as absent" tone="orange" />
       </section>
       <section className="content-grid">
         <div className="panel roster-panel">

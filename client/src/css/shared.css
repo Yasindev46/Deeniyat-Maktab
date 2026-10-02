@@ -1,10 +1,10 @@
 .stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 17px; }
-.stat-card { position: relative; display: flex; min-height: 120px; flex-direction: column; align-items: flex-start; justify-content: center; padding: 18px 21px; overflow: hidden; border: 1px solid #e9edf2; border-radius: 11px; background: white; }
+.stat-card { position: relative; display: flex; min-height: 120px; flex-direction: column; align-items: flex-start; justify-content: center; padding: 18px 21px; overflow: hidden; border: 1px solid #02b7f9; border-radius: 11px; background: white; font-size: 20px; font-weight: 500; box-shadow: 3px 2px 5px rgb(20, 145, 171); transition: transform .15s ease; }
 .stat-card::after { position: absolute; top: 22px; right: 22px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .75; content: ''; }
 .stat-blue { color: var(--blue); }
 .stat-green { color: var(--green); }
 .stat-orange { color: var(--orange); }
-.stat-label { color: #778396; font-size: 11px; font-weight: 500; }
+.stat-label { color: #000003; font-size: 22px; font-weight: 500; }
 .stat-value { margin-top: 9px; color: #1b293a; font: 750 25px Manrope, sans-serif; letter-spacing: -.5px; }
 .stat-detail { margin-top: 4px; color: #96a0ad; font-size: 12px; }
 

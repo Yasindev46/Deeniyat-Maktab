@@ -33,9 +33,9 @@ export default function FeesView({ fees, classes, loading, busy, onSaveFee, onDo
   return (
     <>
       <section className="stats-grid">
-        <StatCard label="Expected fees" value={money(totals.expected)} detail={`${filteredFees.length} students in view`} tone="blue" />
-        <StatCard label="Collected" value={money(totals.collected)} detail="Payments recorded" tone="green" />
-        <StatCard label="Balance due" value={money(totals.pending)} detail="Outstanding amount" tone="orange" />
+        <StatCard label="Total expected fees" value={money(totals.expected)} detail={`${filteredFees.length} students in view`} tone="blue" />
+        <StatCard label="Total collected" value={money(totals.collected)} detail="Payments recorded" tone="green" />
+        <StatCard label="Total balance due" value={money(totals.pending)} detail="Outstanding amount" tone="orange" />
       </section>
       <section className="panel">
         <div className="panel-heading">
