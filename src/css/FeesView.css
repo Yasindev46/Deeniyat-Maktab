@@ -1,0 +1,15 @@
+.fee-toolbar { max-width: 810px; }
+.fee-table th:last-child, .fee-table td:last-child { text-align: right; }
+.notes-cell { max-width: 175px; overflow: hidden; text-overflow: ellipsis; }
+.amount-paid { color: #25825b !important; font-weight: 650; }
+.amount-due { color: #c47e37 !important; font-weight: 650; }
+
+@media (max-width: 760px) {
+  .fee-toolbar .search-box { flex-basis: 100%; }
+  .fee-toolbar select { flex: 1 1 135px; }
+}
+
+@media (max-width: 440px) {
+  .fee-table { min-width: 680px; }
+  .notes-cell { max-width: 120px; }
+}
