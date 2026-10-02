@@ -13,7 +13,7 @@ dist/
 *.log
 npm-debug.log*
 
-# SQLite runtime files
+# SQLite runtime files (the main database is intentionally tracked)
 *.db-shm
 *.db-wal
 

@@ -1,12 +1,15 @@
 import express from 'express';
 import multer from 'multer';
+import cors from 'cors';
+import dotenv from 'dotenv';
 import { DatabaseSync } from 'node:sqlite';
-import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
-const databasePath = process.env.DATABASE_PATH || join(root, 'database.db');
+dotenv.config({ path: join(root, '.env') });
+
+const databasePath = resolve(root, process.env.DATABASE_PATH || 'database.db');
 const database = new DatabaseSync(databasePath);
 const app = express();
 const upload = multer({
@@ -15,6 +18,12 @@ const upload = multer({
 });
 const port = Number(process.env.PORT) || 3001;
 const fixedFee = 2400;
+const allowedOrigins = new Set(
+  (process.env.CLIENT_URL || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+);
 
 database.exec(`
   PRAGMA foreign_keys = ON;
@@ -43,7 +52,19 @@ database.exec(`
   );
 `);
 
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    const error = new Error('This origin is not allowed to access the API.');
+    error.status = 403;
+    return callback(error);
+  },
+}));
 app.use(express.json({ limit: '1mb' }));
+
+app.get('/api/health', (_request, response) => {
+  response.json({ status: 'ok' });
+});
 
 function todayDate() {
   const now = new Date();
@@ -274,12 +295,6 @@ app.get('/api/analytics', (request, response) => {
 app.use('/api', (request, response) => {
   response.status(404).json({ error: `API route not found: ${request.method} ${request.path}` });
 });
-
-const builtClient = join(root, 'dist');
-if (existsSync(builtClient)) {
-  app.use(express.static(builtClient));
-  app.get('*path', (_request, response) => response.sendFile(join(builtClient, 'index.html')));
-}
 
 app.use((error, _request, response, _next) => {
   const status = error.status ?? (error instanceof multer.MulterError ? 400 : 500);
