@@ -1,38 +1,48 @@
 # Deeniyat Maktab Portal
 
-Responsive student attendance and fee-management portal built with React, Vite,
-Redux Toolkit, Express, and SQLite.
+The portal is split into two independently deployable applications:
 
-## Requirements
+- [`client/`](./client/): React, Vite, and Redux Toolkit frontend.
+- [`server/`](./server/): Express API and the existing SQLite database.
 
-- Node.js 22.13 or later (the backend uses Node's built-in `node:sqlite` module)
-- npm
+Use Node.js 22.13 or later for the server's built-in `node:sqlite` module.
 
-## Run locally
+## Develop locally
+
+Run each app in a separate terminal:
 
 ```sh
+cd server
 npm install
 npm run dev
 ```
 
-Open the Vite URL printed in the terminal. The development server proxies `/api`
-requests to the Express API on port 3001.
-
-## Production
-
 ```sh
-npm run build
-npm start
+cd client
+npm install
+npm run dev
 ```
 
-The Express server serves the built React application and its API on port 3001.
-Set `PORT` to use another port.
+The client runs on `http://localhost:5173` and proxies `/api` requests to the
+server at `http://localhost:3001`.
 
-## Database
+## Deploy separately
 
-The API opens the existing `database.db` file in the project root. It retains
-the current `students`, `attendance_records`, and `fees_records` tables and
-creates any missing tables without replacing existing records. To use another
-SQLite file, set `DATABASE_PATH` to its path before starting the server.
+Build the client from `client/` using `npm install` and `npm run build`. Deploy
+the generated `client/dist/` files to a static hosting provider with SPA
+fallback enabled. Set `VITE_API_URL` to the public server origin at build time.
 
-CSV imports expect a header row followed by `sr,name,class,mobile` columns.
+Deploy `server/` as a Node.js application using `npm install` and `npm start`.
+Configure `CLIENT_URL` to the deployed client origin, and configure
+`DATABASE_PATH` to a persistent writable SQLite location. The host must support
+Node.js 22.13 or later and persistent disk storage.
+
+## Environment and credentials
+
+Each application has a local `.env` and a committed `.env.example`. Local
+`.env` files are ignored by Git. The frontend's `VITE_*` variables are embedded
+in the public client bundle; never put secrets or private tokens there.
+
+This application currently does not use API-token authentication, so no token
+is required. If the API is exposed publicly, add an authentication mechanism
+before deployment.
