@@ -3,14 +3,17 @@ import { request } from './api';
 
 export const loadStudents = createAsyncThunk('portal/loadStudents', () => request('/students'));
 export const loadFees = createAsyncThunk('portal/loadFees', () => request('/fees'));
+export const loadExpenses = createAsyncThunk('portal/loadExpenses', () => request('/expenses'));
 
 const portalSlice = createSlice({
   name: 'portal',
   initialState: {
     students: [],
     fees: [],
+    expenses: [],
     loadingStudents: false,
     loadingFees: false,
+    loadingExpenses: false,
     error: '',
   },
   reducers: {
@@ -43,6 +46,18 @@ const portalSlice = createSlice({
       .addCase(loadFees.rejected, (state, action) => {
         state.loadingFees = false;
         state.error = action.error.message || 'Could not load fee records.';
+      })
+      .addCase(loadExpenses.pending, (state) => {
+        state.loadingExpenses = true;
+        state.error = '';
+      })
+      .addCase(loadExpenses.fulfilled, (state, action) => {
+        state.loadingExpenses = false;
+        state.expenses = action.payload;
+      })
+      .addCase(loadExpenses.rejected, (state, action) => {
+        state.loadingExpenses = false;
+        state.error = action.error.message || 'Could not load expense records.';
       });
   },
 });

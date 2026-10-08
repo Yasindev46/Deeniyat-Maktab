@@ -11,6 +11,7 @@ export default function FeesView({ fees, classes, loading, busy, onSaveFee, onDo
   const [feeStatus, setFeeStatus] = useState('All');
   const [feeSearch, setFeeSearch] = useState('');
   const [feeStudent, setFeeStudent] = useState(null);
+
   const filteredFees = useMemo(() => {
     const query = feeSearch.trim().toLocaleLowerCase();
     return fees.filter((fee) => {
@@ -20,6 +21,7 @@ export default function FeesView({ fees, classes, loading, busy, onSaveFee, onDo
         && (feeStatus === 'All' || (feeStatus === 'Paid' ? balance <= 0 : balance > 0));
     });
   }, [feeClass, feeSearch, feeStatus, fees]);
+
   const totals = filteredFees.reduce((result, fee) => ({
     expected: result.expected + FIXED_FEE,
     collected: result.collected + Number(fee.paid_amount),
@@ -49,18 +51,19 @@ export default function FeesView({ fees, classes, loading, busy, onSaveFee, onDo
         </div>
         <div className="table-wrap">
           <table className="data-table fee-table">
-            <thead><tr><th>Student</th><th>Class</th><th>Paid</th><th>Balance</th><th>Notes</th><th aria-label="Actions" /></tr></thead>
+            <thead><tr><th>Student</th><th>Mobile</th><th>Class</th><th>Paid</th><th>Balance</th><th>Notes</th><th aria-label="Actions" /></tr></thead>
             <tbody>
               {filteredFees.map((fee) => {
                 const balance = FIXED_FEE - Number(fee.paid_amount);
                 return (
                   <tr key={fee.student_id}>
                     <td><div className="student-cell"><strong>{fee.name}</strong><span>#{fee.sr}</span></div></td>
+                    <td>{fee.mobile}</td>
                     <td>{fee.class}</td>
                     <td className="amount-paid">{money(fee.paid_amount)}</td>
                     <td className={balance > 0 ? 'amount-due' : 'amount-paid'}>{money(balance)}</td>
                     <td className="notes-cell">{fee.notes || '—'}</td>
-                    <td><button className="button button-small button-plain" onClick={() => setFeeStudent(fee)}>Manage</button></td>
+                    <td><button className="button button-small button-plain" onClick={() => setFeeStudent(fee)}>Manage Fee</button></td>
                   </tr>
                 );
               })}
@@ -71,7 +74,7 @@ export default function FeesView({ fees, classes, loading, busy, onSaveFee, onDo
       </section>
       {feeStudent && (
         <Suspense fallback={<div className="modal-backdrop"><div className="modal-card">Loading payment form…</div></div>}>
-          <FeeModal student={feeStudent} busy={busy} onClose={() => setFeeStudent(null)} onSubmit={submitFee} />
+          <FeeModal student={feeStudent}  busy={busy} onClose={() => setFeeStudent(null)} onSubmit={submitFee} />
         </Suspense>
       )}
     </>

@@ -55,8 +55,8 @@ export default function RosterView({ students, loading, busy, onSave, onImport }
         </form>
         <form className="panel import-panel" onSubmit={submitImport}>
           <div className="panel-heading">
-            <div><h2>Import a roster</h2><p>Quickly add or update multiple students at once.</p></div>
-            <span className="upload-icon" aria-hidden="true">↑</span>
+            <div><h2>Import a student</h2><p>Quickly add or update multiple students at once.</p></div>
+            {/* <span className="upload-icon" aria-hidden="true">↑</span> */}
           </div>
           <label className="upload-box">
             <span className="upload-symbol">＋</span><strong>Choose a CSV file</strong><span>Use columns: sr, name, class, mobile</span>

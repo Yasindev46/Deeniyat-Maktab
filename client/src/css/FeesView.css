@@ -1,5 +1,6 @@
 .fee-toolbar { max-width: 810px; }
 .fee-table th:last-child, .fee-table td:last-child { text-align: right; }
+.fee-table th{font-weight: bold; font-size: 14px; color: #000000; }
 .notes-cell { max-width: 175px; overflow: hidden; text-overflow: ellipsis; }
 .amount-paid { color: #25825b !important; font-weight: 650; }
 .amount-due { color: #c47e37 !important; font-weight: 650; }
