@@ -2,7 +2,7 @@ const apiBaseUrl = import.meta.env.DEV
   ? ''
   : (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
-  const apiUrl = process.env.VITE_API_URL;
+  const apiUrl = process.env.VITE_API_BASE_URL;
 
 export async function request(path, options = {}) {
   const response = await fetch(`${apiUrl}/api${path}`, options);
