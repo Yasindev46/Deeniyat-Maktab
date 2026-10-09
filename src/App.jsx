@@ -50,7 +50,7 @@ function App() {
       <header className="topbar">
         <a className="brand" href="#" aria-label="Deeniyat Maktab Portal home">
           <span className="brand-copy">
-            <strong>Deeniyat Maktab, Walhekarwadi</strong>
+            <strong>Deeniyat Maktab, Walhekarwadi-new</strong>
           </span>
         </a>
         <nav className="main-nav" aria-label="Main navigation">
