@@ -22,6 +22,7 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
   const [amount, setAmount] = useState('');
   const [purpose, setPurpose] = useState('');
   const [expenseSearch, setExpenseSearch] = useState('');
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
 
   const totalCollected = useMemo(
     () => fees.reduce((total, fee) => total + Number(fee.paid_amount || 0), 0),
@@ -63,6 +64,10 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
     if (await onSaveExpense({ date, amount: Number(amount), purpose })) setIsModalOpen(false);
   }
 
+  async function confirmDeleteExpense() {
+    if (await onDeleteExpense(expenseToDelete)) setExpenseToDelete(null);
+  }
+
   return (
     <>
       <section className="stats-grid">
@@ -100,7 +105,7 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
                   <td>{formatExpenseDate(expense.date)}</td>
                   <td className="expense-purpose">{expense.purpose || '—'}</td>
                   <td className="amount-due">{money(expense.amount)}</td>
-                  <td className="amount-due"><button className="button button-small button-plain" onClick={() => onDeleteExpense(expense)}>Delete</button></td>
+                  <td className="amount-due"><button className="button button-small button-plain" onClick={() => setExpenseToDelete(expense)}>Delete</button></td>
                 </tr>
               ))}
               {!filteredExpenses.length && <EmptyRow columns={4} loading={loading} />}
@@ -166,6 +171,43 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
               <button className="button button-primary" type="submit" disabled={busy}>Save expense</button>
             </div>
           </form>
+        </div>
+      )}
+
+      {expenseToDelete && (
+        <div
+          className="expense-modal-backdrop"
+          onMouseDown={(event) => {
+            if (!busy && event.target === event.currentTarget) setExpenseToDelete(null);
+          }}
+        >
+          <section
+            className="expense-modal expense-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-expense-title"
+            aria-describedby="delete-expense-description"
+          >
+            <p className="eyebrow">CONFIRM DELETION</p>
+            <h2 id="delete-expense-title">Delete this expense?</h2>
+            <p id="delete-expense-description" className="expense-confirm-description">
+              This expense record will be permanently removed.
+            </p>
+            <dl className="expense-confirm-details">
+              <div><dt>Date</dt><dd>{formatExpenseDate(String(expenseToDelete.date || ''))}</dd></div>
+              <div><dt>Purpose</dt><dd>{expenseToDelete.purpose || '—'}</dd></div>
+              <div><dt>Amount</dt><dd>{money(expenseToDelete.amount)}</dd></div>
+              <div><dt>Record ID</dt><dd>{expenseToDelete.exp_id}</dd></div>
+            </dl>
+            <div className="expense-modal-actions">
+              <button className="button button-plain" type="button" onClick={() => setExpenseToDelete(null)} disabled={busy}>
+                Cancel
+              </button>
+              <button className="button button-danger" type="button" onClick={confirmDeleteExpense} disabled={busy}>
+                {busy ? 'Deleting…' : 'Confirm delete'}
+              </button>
+            </div>
+          </section>
         </div>
       )}
     </>

@@ -30,7 +30,7 @@ export function StudentTable({ students, mode, onToggle, onEdit, loading }) {
             <th>Student</th>
             <th>Class</th>
             {mode === 'roster'
-              ? <><th>Mobile</th><th>Attendance</th><th aria-label="Actions" /></>
+              ? <><th>Mobile</th><th>Actions</th><th aria-label="Actions" /></>
               : <><th>Today&apos;s status</th>{mode === 'attendance' && <th aria-label="Mark attendance" />}</>}
           </tr>
         </thead>
@@ -43,7 +43,7 @@ export function StudentTable({ students, mode, onToggle, onEdit, loading }) {
                 ? (
                   <>
                     <td>{student.mobile || '—'}</td>
-                    <td><StatusBadge status={student.today_status} /></td>
+                    {/* <td><StatusBadge status={student.today_status} /></td> */}
                     <td><button className="button-edit button-small button-plain" onClick={() => onEdit(student)}>Edit</button></td>
                   </>
                 )

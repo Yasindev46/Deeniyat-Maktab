@@ -154,8 +154,6 @@ export const createAppActions = ({ dispatch, setBusy, setLocalError, setNotice }
 };
 
 async function onDeleteExpense(expense) {
-  const confirmed = window.confirm(`Are you sure you want to delete the expense record for ${expense.purpose || 'this entry'}? This action cannot be undone.`);
-  if (!confirmed) return false;
   return perform(async () => {
     await request(`/expenses/${expense.exp_id}`, { method: 'DELETE' });
     await dispatch(loadExpenses()).unwrap();

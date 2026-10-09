@@ -22,5 +22,8 @@
   .analytics-filters label { font-size: 11px; }
   .analytics-filters select { padding: 0 9px; font-size: 12px; }
   .analytics-filters .button { grid-column: auto; width: 100%; }
-  .analytics-results .data-table { min-width: 590px; }
+  .analytics-results .data-table { min-width: 0; }
+  .rate-cell { min-width: 0; gap: 2px; }
+  .rate-cell > span { width: auto; flex: 0 0 auto; font-size: 8px; }
+  .progress-track { width: 18px; flex: 0 1 18px; }
 }
