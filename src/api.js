@@ -1,10 +1,7 @@
-const apiBaseUrl = import.meta.env.DEV
-  ? ''
-  : (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
-
-  const apiUrl = process.env.REACT_APP_API_URL;
-
+const apiUrl = process.env.REACT_APP_API_URL;
+console.log('API URL:', apiUrl);
 export async function request(path, options = {}) {
+  console.log('API URL:', apiUrl);
   const response = await fetch(`${apiUrl}/api${path}`, options);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || `Please try again later.`);
