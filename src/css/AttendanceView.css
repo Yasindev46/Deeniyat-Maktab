@@ -16,6 +16,13 @@
 .absent-list .all-present { color: #27825b; }
 .helper-text { margin: 10px 0 0; color: #9aa4b0; font-size: 9px; line-height: 1.5; }
 
+.attendance-confirm-backdrop { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(19, 34, 53, .48); }
+.attendance-confirm-card { width: min(420px, 100%); padding: 25px; border: 1px solid #e9edf2; border-radius: 13px; background: white; box-shadow: 0 20px 70px rgba(22, 38, 57, .18); }
+.attendance-confirm-card .eyebrow { margin-bottom: 7px; }
+.attendance-confirm-card h2 { margin: 0 0 8px; font: 700 17px Manrope, sans-serif; }
+.attendance-confirm-description { margin: 0; color: #758195; font-size: 12px; line-height: 1.5; }
+.attendance-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
 @media (max-width: 1050px) {
   .content-grid { grid-template-columns: minmax(0, 1.6fr) minmax(245px, .85fr); }
 }
@@ -26,6 +33,8 @@
 }
 
 @media (max-width: 440px) {
+  .attendance-confirm-backdrop { align-items: end; padding: 10px; }
+  .attendance-confirm-card { padding: 20px; border-radius: 13px 13px 8px 8px; }
   .report-date, .absent-list li span, .helper-text { font-size: 10px; }
   .report-summary, .absent-list li { font-size: 12px; }
 }

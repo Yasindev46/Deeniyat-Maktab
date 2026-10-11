@@ -105,8 +105,6 @@ export const createAppActions = ({ dispatch, setBusy, setLocalError, setNotice }
   }
 
   async function finalizeAttendance(classFilter) {
-    const confirmed = window.confirm(`Lock attendance for ${classFilter === 'All' ? 'all classes' : classFilter}? Unmarked students will be recorded as absent.`);
-    if (!confirmed) return false;
     return perform(async () => {
       await postJson('/attendance/finalize', { class: classFilter });
       const updatedStudents = await refreshStudents();
