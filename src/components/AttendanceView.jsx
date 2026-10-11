@@ -2,23 +2,55 @@ import { useMemo, useState } from 'react';
 import { AttendanceReport, ClassOptions, StatCard, StudentTable } from './shared';
 import '../css/AttendanceView.css';
 
-export default function AttendanceView({ students, loading, busy, onToggle, onMarkAll, onFinalize }) {
+export default function AttendanceView({ students, loading, busy, onMarkAll, onFinalize }) {
   const [classFilter, setClassFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [showFinalizeConfirmation, setShowFinalizeConfirmation] = useState(false);
+  const [stagedStatuses, setStagedStatuses] = useState({});
   const classes = useMemo(() => [...new Set(students.map((student) => student.class))].sort((a, b) => a.localeCompare(b)), [students]);
+  const stagedStudents = useMemo(
+    () => students.map((student) => ({
+      ...student,
+      today_status: stagedStatuses[student.id] ?? student.today_status,
+    })),
+    [stagedStatuses, students],
+  );
   const visibleStudents = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    return students.filter((student) => (
+    return stagedStudents.filter((student) => (
       (classFilter === 'All' || student.class === classFilter)
       && `${student.name} ${student.sr}`.toLocaleLowerCase().includes(query)
     ));
-  }, [classFilter, search, students]);
+  }, [classFilter, search, stagedStudents]);
   const attendanceCount = visibleStudents.filter((student) => student.today_status === 'Present').length;
+
+  function stageAttendance(student, status) {
+    const originalStatus = students.find(({ id }) => id === student.id)?.today_status;
+    setStagedStatuses((current) => {
+      const next = { ...current };
+      if (status === originalStatus) {
+        delete next[student.id];
+      } else {
+        next[student.id] = status;
+      }
+      return next;
+    });
+  }
 
   async function confirmFinalize() {
     setShowFinalizeConfirmation(false);
-    await onFinalize(classFilter);
+    const updates = stagedStudents
+      .filter((student) => classFilter === 'All' || student.class === classFilter)
+      .filter((student) => stagedStatuses[student.id] !== undefined)
+      .map((student) => ({ studentId: student.id, status: stagedStatuses[student.id] }));
+    const finalized = await onFinalize(classFilter, updates);
+    if (finalized) {
+      setStagedStatuses((current) => {
+        const next = { ...current };
+        updates.forEach(({ studentId }) => delete next[studentId]);
+        return next;
+      });
+    }
   }
 
   return (
@@ -39,14 +71,14 @@ export default function AttendanceView({ students, loading, busy, onToggle, onMa
             <select aria-label="Filter attendance by class" value={classFilter} onChange={(event) => setClassFilter(event.target.value)}><ClassOptions classes={classes} /></select>
             <button className="button button-soft" onClick={() => onMarkAll(classFilter)} disabled={busy || !visibleStudents.length}>✓ <span className="button-label">Mark all present</span></button>
           </div>
-          <StudentTable students={visibleStudents} mode="attendance" onToggle={onToggle} loading={loading || busy} />
+          <StudentTable students={visibleStudents} mode="attendance" onToggle={stageAttendance} loading={loading || busy} />
         </div>
         <aside className="panel report-panel">
           <div className="panel-heading">
             <div><h2>Daily report</h2><p>Ready to share with your group.</p></div>
             <span className="report-icon" aria-hidden="true">↗</span>
           </div>
-          <AttendanceReport students={students} classFilter={classFilter} />
+          <AttendanceReport students={stagedStudents} classFilter={classFilter} />
           <button className="button button-whatsapp" onClick={() => setShowFinalizeConfirmation(true)} disabled={busy || !students.length}>
             {busy ? 'Saving attendance…' : '✓ Finalize & copy report'}
           </button>
@@ -63,7 +95,7 @@ export default function AttendanceView({ students, loading, busy, onToggle, onMa
           <section className="attendance-confirm-card" role="dialog" aria-modal="true" aria-labelledby="attendance-confirm-title">
             <p className="eyebrow">FINALIZE ATTENDANCE</p>
             <h2 id="attendance-confirm-title">
-              Lock attendance for {classFilter === 'All' ? 'all classes' : classFilter}?
+              Lock attendance for {classFilter === 'All' ? 'all classes' :"class "+ classFilter}?
             </h2>
             <p className="attendance-confirm-description">
               Students not marked present will be recorded as absent. This will finalize attendance and copy the report.

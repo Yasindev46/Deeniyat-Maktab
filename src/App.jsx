@@ -31,7 +31,6 @@ function App() {
   const {
     dismissError,
     handleViewError,
-    toggleAttendance,
     markAllPresent,
     finalizeAttendance,
     saveStudent,
@@ -92,7 +91,6 @@ function App() {
             students={students}
             loading={loadingStudents}
             busy={busy}
-            onToggle={toggleAttendance}
             onMarkAll={markAllPresent}
             onFinalize={finalizeAttendance}
           />

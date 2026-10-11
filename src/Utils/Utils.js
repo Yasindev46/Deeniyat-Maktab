@@ -90,13 +90,6 @@ export const createAppActions = ({ dispatch, setBusy, setLocalError, setNotice }
     return dispatch(loadStudents()).unwrap();
   }
 
-  async function toggleAttendance(student, status) {
-    return perform(async () => {
-      await postJson(`/attendance/${student.id}`, { status });
-      await refreshStudents();
-    });
-  }
-
   async function markAllPresent(classFilter) {
     return perform(async () => {
       await postJson('/attendance/mark-all', { class: classFilter });
@@ -104,8 +97,11 @@ export const createAppActions = ({ dispatch, setBusy, setLocalError, setNotice }
     }, `Everyone in ${classFilter === 'All' ? 'the roster' : classFilter} is marked present.`);
   }
 
-  async function finalizeAttendance(classFilter) {
+  async function finalizeAttendance(classFilter, attendanceUpdates = []) {
     return perform(async () => {
+      await Promise.all(attendanceUpdates.map(({ studentId, status }) => (
+        postJson(`/attendance/${studentId}`, { status })
+      )));
       await postJson('/attendance/finalize', { class: classFilter });
       const updatedStudents = await refreshStudents();
       const report = buildAttendanceMessage(updatedStudents, classFilter);
@@ -267,7 +263,6 @@ async function onDeleteExpense(expense) {
   return {
     dismissError,
     handleViewError,
-    toggleAttendance,
     markAllPresent,
     finalizeAttendance,
     saveStudent,
