@@ -1,4 +1,5 @@
 import { postJson, request } from '../api';
+import { toArray } from './arrays';
 import { clearError, loadExpenses, loadFees, loadStudents } from '../store';
 
 const FIXED_FEE = 2400;
@@ -12,7 +13,7 @@ export const VIEW_COPY = {
 };
 
 export const getClasses = (students) =>
-  [...new Set(students.map((student) => student.class))].sort((a, b) => a.localeCompare(b));
+  [...new Set(toArray(students).map((student) => student.class))].sort((a, b) => a.localeCompare(b));
 
 export const createRupeeSymbolImage = () => {
   const canvas = document.createElement('canvas');
@@ -29,7 +30,7 @@ export const createRupeeSymbolImage = () => {
 }
 
 export const buildAttendanceMessage = (students, classFilter) => {
-  const roster = students.filter((student) => classFilter === 'All' || student.class === classFilter);
+  const roster = toArray(students).filter((student) => classFilter === 'All' || student.class === classFilter);
   const absent = roster.filter((student) => student.today_status !== 'Present');
   const date = new Date().toLocaleDateString('en-GB');
   const lines = [
@@ -99,7 +100,7 @@ export const createAppActions = ({ dispatch, setBusy, setLocalError, setNotice }
 
   async function finalizeAttendance(classFilter, attendanceUpdates = []) {
     return perform(async () => {
-      await Promise.all(attendanceUpdates.map(({ studentId, status }) => (
+      await Promise.all(toArray(attendanceUpdates).map(({ studentId, status }) => (
         postJson(`/attendance/${studentId}`, { status })
       )));
       await postJson('/attendance/finalize', { class: classFilter });

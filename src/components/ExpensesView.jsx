@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { toArray } from '../Utils/arrays';
 import { EmptyRow, StatCard } from './shared';
 import '../css/ExpensesView.css';
 
@@ -17,6 +18,8 @@ function formatExpenseDate(value) {
 }
 
 export default function ExpensesView({ fees = [], expenses = [], loading, busy, onSaveExpense, onDeleteExpense,onDownloadPdf }) {
+  const safeFees = toArray(fees);
+  const safeExpenses = toArray(expenses);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [date, setDate] = useState(todayInputDate);
   const [amount, setAmount] = useState('');
@@ -25,19 +28,19 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
   const [expenseToDelete, setExpenseToDelete] = useState(null);
 
   const totalCollected = useMemo(
-    () => fees.reduce((total, fee) => total + Number(fee.paid_amount || 0), 0),
-    [fees],
+    () => safeFees.reduce((total, fee) => total + Number(fee.paid_amount || 0), 0),
+    [safeFees],
   );
   const totalExpenses = useMemo(
-    () => expenses.reduce((total, expense) => total + Number(expense.amount || 0), 0),
-    [expenses],
+    () => safeExpenses.reduce((total, expense) => total + Number(expense.amount || 0), 0),
+    [safeExpenses],
   );
   const sortedExpenses = useMemo(
-    () => [...expenses].sort((first, second) => (
+    () => [...safeExpenses].sort((first, second) => (
       String(second.date).localeCompare(String(first.date))
       || Number(second.exp_id) - Number(first.exp_id)
     )),
-    [expenses],
+    [safeExpenses],
   );
   const filteredExpenses = useMemo(() => {
     const query = expenseSearch.trim().toLocaleLowerCase();
@@ -72,7 +75,7 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
     <>
       <section className="stats-grid">
         <StatCard label="Total collected" value={money(totalCollected)} detail="Payments recorded" tone="green" />
-        <StatCard label="Total expenses" value={money(totalExpenses)} detail={`${expenses.length} expenses recorded`} tone="orange" />
+        <StatCard label="Total expenses" value={money(totalExpenses)} detail={`${safeExpenses.length} expenses recorded`} tone="orange" />
         <StatCard label="Total available" value={money(totalCollected - totalExpenses)} detail="After expenses" tone="blue" />
       </section>
 
@@ -84,7 +87,7 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
           </div>
           
           <div className="panel-actions" style={{ display: 'flex', gap: '0.5rem' }}>
-            <button className="button button-soft" onClick={() => onDownloadPdf(expenses, totalCollected, totalExpenses)} disabled={busy}>↓ <span className="button-label">Download PDF</span></button>
+            <button className="button button-soft" onClick={() => onDownloadPdf(safeExpenses, totalCollected, totalExpenses)} disabled={busy}>↓ <span className="button-label">Download PDF</span></button>
           </div>
         </div>
         <div className="toolbar fee-toolbar" style={{ display: 'flex', justifyContent: 'space-between', gap: '2.5rem',  }}>

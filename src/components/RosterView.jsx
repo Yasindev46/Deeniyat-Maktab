@@ -1,17 +1,19 @@
 import { useMemo, useState } from 'react';
+import { toArray } from '../Utils/arrays';
 import { StudentTable } from './shared';
 import '../css/RosterView.css';
 
 const emptyStudent = { sr: '', name: '', class: '', mobile: '' };
 
 export default function RosterView({ students, loading, busy, onSave, onImport }) {
+  const safeStudents = toArray(students);
   const [search, setSearch] = useState('');
   const [studentForm, setStudentForm] = useState(emptyStudent);
   const [editingStudent, setEditingStudent] = useState(null);
   const visibleStudents = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    return students.filter((student) => `${student.name} ${student.sr}`.toLocaleLowerCase().includes(query));
-  }, [search, students]);
+    return safeStudents.filter((student) => `${student.name} ${student.sr}`.toLocaleLowerCase().includes(query));
+  }, [search, safeStudents]);
 
   function editStudent(student) {
     setEditingStudent(student);

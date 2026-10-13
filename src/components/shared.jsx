@@ -1,8 +1,11 @@
+import { toArray } from '../Utils/arrays';
+
 export function ClassOptions({ classes }) {
+  const safeClasses = toArray(classes);
   return (
     <>
       <option value="All">All classes</option>
-      {classes.map((className) => <option key={className} value={className}>{className}</option>)}
+      {safeClasses.map((className) => <option key={className} value={className}>{className}</option>)}
     </>
   );
 }
@@ -22,6 +25,7 @@ export function EmptyRow({ columns, loading = false }) {
 }
 
 export function StudentTable({ students, mode, onToggle, onEdit, loading }) {
+  const safeStudents = toArray(students);
   return (
     <div className="table-wrap">
       <table className="data-table">
@@ -35,7 +39,7 @@ export function StudentTable({ students, mode, onToggle, onEdit, loading }) {
           </tr>
         </thead>
         <tbody>
-          {students.map((student) => (
+          {safeStudents.map((student) => (
             <tr key={student.id}>
               <td><div className="student-cell"><strong>{student.name}</strong><span>#{student.sr}</span></div></td>
               <td>{student.class}</td>
@@ -66,7 +70,7 @@ export function StudentTable({ students, mode, onToggle, onEdit, loading }) {
                 )}
             </tr>
           ))}
-          {!students.length && <EmptyRow columns={mode === 'roster' ? 5 : mode === 'attendance' ? 4 : 3} loading={loading} />}
+          {!safeStudents.length && <EmptyRow columns={mode === 'roster' ? 5 : mode === 'attendance' ? 4 : 3} loading={loading} />}
         </tbody>
       </table>
     </div>
@@ -78,7 +82,7 @@ export function StatusBadge({ status }) {
 }
 
 export function AttendanceReport({ students, classFilter }) {
-  const roster = students.filter((student) => classFilter === 'All' || student.class === classFilter);
+  const roster = toArray(students).filter((student) => classFilter === 'All' || student.class === classFilter);
   const absent = roster.filter((student) => student.today_status !== 'Present');
 
   return (

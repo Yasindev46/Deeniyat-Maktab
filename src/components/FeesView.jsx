@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
+import { toArray } from '../Utils/arrays';
 import { ClassOptions, EmptyRow, StatCard } from './shared';
 import '../css/FeesView.css';
 
@@ -7,6 +8,7 @@ const FIXED_FEE = 2400;
 const money = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
 export default function FeesView({ fees, classes, loading, busy, onSaveFee, onDownloadPdf }) {
+  const safeFees = toArray(fees);
   const [feeClass, setFeeClass] = useState('All');
   const [feeStatus, setFeeStatus] = useState('All');
   const [feeSearch, setFeeSearch] = useState('');
@@ -14,13 +16,13 @@ export default function FeesView({ fees, classes, loading, busy, onSaveFee, onDo
 
   const filteredFees = useMemo(() => {
     const query = feeSearch.trim().toLocaleLowerCase();
-    return fees.filter((fee) => {
+    return safeFees.filter((fee) => {
       const balance = FIXED_FEE - Number(fee.paid_amount);
       return (feeClass === 'All' || fee.class === feeClass)
         && `${fee.name} ${fee.sr}`.toLocaleLowerCase().includes(query)
         && (feeStatus === 'All' || (feeStatus === 'Paid' ? balance <= 0 : balance > 0));
     });
-  }, [feeClass, feeSearch, feeStatus, fees]);
+  }, [feeClass, feeSearch, feeStatus, safeFees]);
 
   const totals = filteredFees.reduce((result, fee) => ({
     expected: result.expected + FIXED_FEE,

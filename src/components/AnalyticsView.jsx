@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { request } from '../api';
+import { toArray } from '../Utils/arrays';
 import { ClassOptions, EmptyRow, StatusBadge } from './shared';
 import '../css/AnalyticsView.css';
 
@@ -9,9 +10,10 @@ const MONTHS = [
 ];
 
 export default function AnalyticsView({ students, classes, onError }) {
+  const safeStudents = toArray(students);
   const [analyticsType, setAnalyticsType] = useState('class');
   const [analyticsClass, setAnalyticsClass] = useState('All');
-  const [analyticsStudent, setAnalyticsStudent] = useState(() => students[0] ? String(students[0].id) : '');
+  const [analyticsStudent, setAnalyticsStudent] = useState(() => safeStudents[0] ? String(safeStudents[0].id) : '');
   const [analyticsYear, setAnalyticsYear] = useState(String(new Date().getFullYear()));
   const [analyticsMonth, setAnalyticsMonth] = useState('All');
   const [analytics, setAnalytics] = useState([]);
@@ -20,8 +22,8 @@ export default function AnalyticsView({ students, classes, onError }) {
   const years = Array.from({ length: 6 }, (_, index) => String(new Date().getFullYear() - index));
 
   useEffect(() => {
-    if (!analyticsStudent && students.length) setAnalyticsStudent(String(students[0].id));
-  }, [analyticsStudent, students]);
+    if (!analyticsStudent && safeStudents.length) setAnalyticsStudent(String(safeStudents[0].id));
+  }, [analyticsStudent, safeStudents]);
 
   async function generateAnalytics(event) {
     event.preventDefault();
@@ -34,7 +36,7 @@ export default function AnalyticsView({ students, classes, onError }) {
         year: analyticsYear,
         month: analyticsMonth,
       });
-      setAnalytics(await request(`/analytics?${params}`));
+      setAnalytics(toArray(await request(`/analytics?${params}`)));
       setAnalyticsLoaded(true);
     } catch (error) {
       onError(error.message);
@@ -50,10 +52,10 @@ export default function AnalyticsView({ students, classes, onError }) {
         <label>Report type<select value={analyticsType} onChange={(event) => setAnalyticsType(event.target.value)}><option value="class">Class summary</option><option value="student">Individual student</option></select></label>
         {analyticsType === 'class'
           ? <label>Class<select value={analyticsClass} onChange={(event) => setAnalyticsClass(event.target.value)}><ClassOptions classes={classes} /></select></label>
-          : <label>Student<select value={analyticsStudent} onChange={(event) => setAnalyticsStudent(event.target.value)}>{students.map((student) => <option key={student.id} value={student.id}>[{student.sr}] {student.name} ({student.class})</option>)}</select></label>}
+          : <label>Student<select value={analyticsStudent} onChange={(event) => setAnalyticsStudent(event.target.value)}>{safeStudents.map((student) => <option key={student.id} value={student.id}>[{student.sr}] {student.name} ({student.class})</option>)}</select></label>}
         <label>Year<select value={analyticsYear} onChange={(event) => setAnalyticsYear(event.target.value)}>{years.map((year) => <option key={year}>{year}</option>)}</select></label>
         <label>Period<select value={analyticsMonth} onChange={(event) => setAnalyticsMonth(event.target.value)}><option value="All">Full year</option>{MONTHS.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}</select></label>
-        <button className="button button-primary" disabled={analyticsLoading || !students.length}>{analyticsLoading ? 'Generating…' : 'Generate report'}</button>
+        <button className="button button-primary" disabled={analyticsLoading || !safeStudents.length}>{analyticsLoading ? 'Generating…' : 'Generate report'}</button>
       </form>
       {analyticsLoaded && (analyticsType === 'student'
         ? (

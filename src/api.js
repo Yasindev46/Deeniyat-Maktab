@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.VITE_API_URL || 'https://maktab-backend-xi.vercel.app';
+const apiUrl= import.meta.env.VITE_API_URL || import.meta.env.VITE_API_PROXY_TARGET 
 export async function request(path, options = {}) {
   const response = await fetch(`${apiUrl}/api${path}`, options);
   const data = await response.json().catch(() => ({}));

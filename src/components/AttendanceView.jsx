@@ -1,19 +1,21 @@
 import { useMemo, useState } from 'react';
+import { toArray } from '../Utils/arrays';
 import { AttendanceReport, ClassOptions, StatCard, StudentTable } from './shared';
 import '../css/AttendanceView.css';
 
 export default function AttendanceView({ students, loading, busy, onMarkAll, onFinalize }) {
+  const safeStudents = toArray(students);
   const [classFilter, setClassFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [showFinalizeConfirmation, setShowFinalizeConfirmation] = useState(false);
   const [stagedStatuses, setStagedStatuses] = useState({});
-  const classes = useMemo(() => [...new Set(students.map((student) => student.class))].sort((a, b) => a.localeCompare(b)), [students]);
+  const classes = useMemo(() => [...new Set(safeStudents.map((student) => student.class))].sort((a, b) => a.localeCompare(b)), [safeStudents]);
   const stagedStudents = useMemo(
-    () => students.map((student) => ({
+    () => safeStudents.map((student) => ({
       ...student,
       today_status: stagedStatuses[student.id] ?? student.today_status,
     })),
-    [stagedStatuses, students],
+    [stagedStatuses, safeStudents],
   );
   const visibleStudents = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
@@ -25,7 +27,7 @@ export default function AttendanceView({ students, loading, busy, onMarkAll, onF
   const attendanceCount = visibleStudents.filter((student) => student.today_status === 'Present').length;
 
   function stageAttendance(student, status) {
-    const originalStatus = students.find(({ id }) => id === student.id)?.today_status;
+    const originalStatus = safeStudents.find(({ id }) => id === student.id)?.today_status;
     setStagedStatuses((current) => {
       const next = { ...current };
       if (status === originalStatus) {
@@ -79,7 +81,7 @@ export default function AttendanceView({ students, loading, busy, onMarkAll, onF
             <span className="report-icon" aria-hidden="true">↗</span>
           </div>
           <AttendanceReport students={stagedStudents} classFilter={classFilter} />
-          <button className="button button-whatsapp" onClick={() => setShowFinalizeConfirmation(true)} disabled={busy || !students.length}>
+          <button className="button button-whatsapp" onClick={() => setShowFinalizeConfirmation(true)} disabled={busy || !safeStudents.length}>
             {busy ? 'Saving attendance…' : '✓ Finalize & copy report'}
           </button>
           <p className="helper-text">Students not marked present will be recorded as absent for today.</p>
