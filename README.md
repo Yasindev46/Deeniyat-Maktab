@@ -15,4 +15,6 @@ Configure `.env` before development or production builds:
 - `VITE_API_PROXY_TARGET`: backend origin used by the Vite development proxy.
 
 Vite exposes `VITE_*` values to browsers. Do not store secret tokens in this
-file. The API currently does not require a token.
+file. Users can sign in or create an account from the portal. New registrations
+receive the `nonAdmin` role; only admins can access the Fees and Expenses pages.
+Login sessions are stored in browser storage and expire after 12 hours.

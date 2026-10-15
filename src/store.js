@@ -27,6 +27,13 @@ const portalSlice = createSlice({
     clearError(state) {
       state.error = '';
     },
+    resetPortal(state) {
+      clearCollections(state);
+      state.loadingStudents = false;
+      state.loadingFees = false;
+      state.loadingExpenses = false;
+      state.error = '';
+    },
   },
   extraReducers(builder) {
     builder
@@ -72,7 +79,7 @@ const portalSlice = createSlice({
   },
 });
 
-export const { clearError } = portalSlice.actions;
+export const { clearError, resetPortal } = portalSlice.actions;
 
 export const store = configureStore({
   reducer: { portal: portalSlice.reducer },
