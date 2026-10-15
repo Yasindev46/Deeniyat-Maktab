@@ -162,20 +162,21 @@ async function onDeleteExpense(expense) {
       const doc = new jsPDF();
       const rupeeSymbolImage = createRupeeSymbolImage();
       doc.setFontSize(16);
-      doc.text('Deeniyat Maktab - Collection Register', 14, 18);
+      doc.text('Deeniyat Maktab - Fees Collection Register', 14, 18);
       doc.setFontSize(9);
       doc.text(`Generated ${new Date().toLocaleDateString('en-IN')}`, 14, 26);
-      doc.setFontSize(8);
-      [
-        ['Expected', totals.expected, 14],
-        ['Collected', totals.collected, 77],
-        ['Pending', totals.pending, 140],
-      ].forEach(([label, amount, x]) => {
-        doc.text(label, x, 34);
-        addPdfCurrency(doc, rupeeSymbolImage, amount, x + doc.getTextWidth(`${label} `), 34);
-      });
       doc.setFontSize(9);
-      let y = 43;
+      doc.setFont(undefined, 'bold');
+      [
+        ['Total Fees Expected', totals.expected, 14],
+        ['Total Fees Collected', totals.collected, 77],
+        ['Total Fees Pending', totals.pending, 140],
+      ].forEach(([label, amount, x]) => {
+        doc.text(label, x, 36);
+        addPdfCurrency(doc, rupeeSymbolImage, amount, x, 43);
+      });
+      doc.setFont(undefined, 'normal');
+      let y = 58;
       const columns = ['Sr No.', 'Student', 'Mobile', 'Class', 'Paid', 'Balance', 'Notes'];
       const widths = [15, 35, 25, 21, 25, 26, 35];
       doc.setFont(undefined, 'bold');
@@ -203,7 +204,7 @@ async function onDeleteExpense(expense) {
     });
   }
 
-  async function downloadExpensesPdf(expenses, totalCollected, totalExpenses) {
+  async function downloadExpensesPdf(expenses, totalCollected, totalExpenses, lastYearBalance) {
     return perform(async () => {
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
@@ -213,14 +214,17 @@ async function onDeleteExpense(expense) {
       doc.setFontSize(9);
       doc.text(`Generated ${new Date().toLocaleDateString('en-IN')}`, 14, 26);
       doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
       [
         ['Total Collected', totalCollected, 14],
-        ['Total Expenses', totalExpenses, 77],
-        ['Total Available', totalCollected - totalExpenses, 140],
+        ['Last Year Balance', lastYearBalance, 60],
+        ['Total Expenses', totalExpenses, 106],
+        ['Total Available', totalCollected + lastYearBalance - totalExpenses, 152],
       ].forEach(([label, amount, x]) => {
         doc.text(label, x, 36);
         addPdfCurrency(doc, rupeeSymbolImage, amount, x, 43);
       });
+      doc.setFont(undefined, 'normal');
 
       const drawTableHeader = (y) => {
         doc.setFontSize(9);
@@ -232,7 +236,7 @@ async function onDeleteExpense(expense) {
         return y + 7;
       };
 
-      let y = drawTableHeader(56);
+      let y = drawTableHeader(58);
       if (expenses.length === 0) {
         doc.setFontSize(9);
         doc.text('No expense records found.', 14, y);
