@@ -1,7 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createAppActions, getClasses, VIEW_COPY } from './Utils/Utils';
-import { loadExpenses, loadFees, loadStudents } from './store';
+import { loadExpenses, loadFees, loadStudents, resetPortal } from './store';
+import { clearSession, getSession, saveSession } from './session';
+import AuthView from './components/AuthView';
 
 const AttendanceView = lazy(() => import('./components/AttendanceView'));
 const RosterView = lazy(() => import('./components/RosterView'));
@@ -12,19 +14,49 @@ const ExpensesView = lazy(() => import('./components/ExpensesView'));
 function App() {
   const dispatch = useDispatch();
   const { students, fees, expenses, loadingStudents, loadingFees, loadingExpenses, error: storeError } = useSelector((state) => state.portal);
+  const [session, setSession] = useState(getSession);
   const [view, setView] = useState('attendance');
   const [localError, setLocalError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    dispatch(loadStudents());
-  }, [dispatch]);
+    if (session) dispatch(loadStudents());
+  }, [dispatch, session]);
 
   useEffect(() => {
+    if (!session || session.user.role !== 'admin') return;
     if (view === 'fees' || view === 'expenses') dispatch(loadFees());
     if (view === 'expenses') dispatch(loadExpenses());
-  }, [dispatch, view]);
+  }, [dispatch, view, session]);
+
+  useEffect(() => {
+    function expireSession() {
+      clearSession();
+      dispatch(resetPortal());
+      setSession(null);
+      setView('attendance');
+      setLocalError('Your session has expired. Please sign in again.');
+    }
+    window.addEventListener('auth-expired', expireSession);
+    return () => window.removeEventListener('auth-expired', expireSession);
+  }, [dispatch]);
+
+  async function authenticateUser(authenticatedSession) {
+    saveSession(authenticatedSession);
+    setSession(authenticatedSession);
+    setLocalError('');
+    setNotice('');
+  }
+
+  function logout() {
+    clearSession();
+    dispatch(resetPortal());
+    setSession(null);
+    setView('attendance');
+    setLocalError('');
+    setNotice('');
+  }
 
   const classes = getClasses(students);
   const pageError = localError || storeError;
@@ -42,6 +74,9 @@ function App() {
     onDeleteExpense
   } = createAppActions({ dispatch, setBusy, setLocalError, setNotice });
 
+  if (!session) return <AuthView onAuthenticated={authenticateUser} message={localError} />;
+
+  const isAdmin = session.user.role === 'admin';
   const [heading, subtitle] = VIEW_COPY[view];
 
   return (
@@ -49,17 +84,32 @@ function App() {
       <header className="topbar">
         <a className="brand" href="#" aria-label="Deeniyat Maktab Portal home">
           <span className="brand-copy">
-            <strong>Deeniyat Maktab, Walhekarwadi-new2</strong>
+            <strong>Deeniyat Maktab, Walhekarwadi</strong>
           </span>
         </a>
+        {/* <button className="sign-out-button-small" type="button" onClick={logout} aria-label="Sign out" title="Sign out">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 17l5-5-5-5M15 12H3" />
+              <path d="M12 3h6a2 2 0 012 2v14a2 2 0 01-2 2h-6" />
+            </svg>
+          </button> */}
         <nav className="main-nav" aria-label="Main navigation">
           <button className={view === 'attendance' ? 'nav-link active' : 'nav-link'} onClick={() => setView('attendance')}>Attendance</button>
           <button className={view === 'analytics' ? 'nav-link active' : 'nav-link'} onClick={() => setView('analytics')}>Reports</button>
           <button className={view === 'roster' ? 'nav-link active' : 'nav-link'} onClick={() => setView('roster')}>Admin View</button>
-          <button className={view === 'fees' ? 'nav-link active nav-fees' : 'nav-link nav-fees'} onClick={() => setView('fees')}>Fees ledger</button>
-          <button className={view === 'expenses' ? 'nav-link active nav-expenses' : 'nav-link nav-expenses'} onClick={() => setView('expenses')}>Expenses</button>
+          {isAdmin && <button className={view === 'fees' ? 'nav-link active nav-fees' : 'nav-link nav-fees'} onClick={() => setView('fees')}>Fees ledger</button>}
+          {isAdmin && <button className={view === 'expenses' ? 'nav-link active nav-expenses' : 'nav-link nav-expenses'} onClick={() => setView('expenses')}>Expenses</button>}
         </nav>
-        <div className="today-pill"><span className="live-dot" /> {new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+        <div className="session-actions">
+          {/* <span className="signed-in-as">{session.user.username}</span> */}
+          <button className="sign-out-button-medium" type="button" onClick={logout} aria-label="Sign out" title="Sign out">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 17l5-5-5-5M15 12H3" />
+              <path d="M12 3h6a2 2 0 012 2v14a2 2 0 01-2 2h-6" />
+            </svg>
+          </button>
+          <div className="today-pill"><span className="live-dot" /> {new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+        </div>
       </header>
 
       <section className="page-heading">
@@ -104,7 +154,7 @@ function App() {
             onImport={importRoster}
           />
         )}
-        {view === 'fees' && (
+        {view === 'fees' && isAdmin && (
           <FeesView
             fees={fees}
             classes={classes}
@@ -121,7 +171,7 @@ function App() {
            onError={handleViewError}
             />
         )}
-        {view === 'expenses' && (
+        {view === 'expenses' && isAdmin && (
           <ExpensesView
             fees={fees}
             expenses={expenses}
