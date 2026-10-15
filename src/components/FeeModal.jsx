@@ -19,7 +19,7 @@ export default function FeeModal({ student, onClose, onSubmit, busy }) {
         <p className="eyebrow">FEE RECORD</p>
         <h2>Manage payment</h2>
         <p className="modal-student">{student.name} <span>· #{student.sr} · <strong className="modal-student">Class - </strong> {student.class} <br></br></span> Contact No - <tel> {student.mobile}</tel></p>
-        <label>Amount paid (₹)<input name="paid_amount" type="number"  max="2400" step="0.01" required /></label>
+        <label>Amount paid (₹)<input name="paid_amount" type="number"  max="3000" step="0.01" required /></label>
         <label>Notes & Date<input name="notes" type="text" defaultValue={student.notes} placeholder="Optional payment note" /></label>
         <div className="modal-actions">
           <button type="button" className="button button-plain" onClick={onClose}>Cancel</button>
