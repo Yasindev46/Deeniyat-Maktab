@@ -4,6 +4,20 @@ import { EmptyRow, StatCard } from './shared';
 import '../css/ExpensesView.css';
 
 const money = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
+const LAST_YEAR_BALANCE_KEY = 'deeniyat.lastYearBalance';
+
+function readLastYearBalance() {
+  try {
+    const storedBalance = window.localStorage.getItem(LAST_YEAR_BALANCE_KEY);
+    const balance = storedBalance === null ? 0 : Number(storedBalance);
+    if (!Number.isFinite(balance) || balance < 0) {
+      return { balance: 0, error: 'The saved last year balance is invalid. Enter a new amount to replace it.' };
+    }
+    return { balance, error: '' };
+  } catch {
+    return { balance: 0, error: 'Unable to read the last year balance from local storage.' };
+  }
+}
 
 function todayInputDate() {
   const today = new Date();
@@ -26,6 +40,10 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
   const [purpose, setPurpose] = useState('');
   const [expenseSearch, setExpenseSearch] = useState('');
   const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [initialLastYearBalance] = useState(readLastYearBalance);
+  const [lastYearBalance, setLastYearBalance] = useState(initialLastYearBalance.balance);
+  const [lastYearBalanceInput, setLastYearBalanceInput] = useState(String(initialLastYearBalance.balance));
+  const [lastYearBalanceError, setLastYearBalanceError] = useState(initialLastYearBalance.error);
 
   const totalCollected = useMemo(
     () => safeFees.reduce((total, fee) => total + Number(fee.paid_amount || 0), 0),
@@ -35,6 +53,7 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
     () => safeExpenses.reduce((total, expense) => total + Number(expense.amount || 0), 0),
     [safeExpenses],
   );
+  const totalAvailable = totalCollected + lastYearBalance - totalExpenses;
   const sortedExpenses = useMemo(
     () => [...safeExpenses].sort((first, second) => (
       String(second.date).localeCompare(String(first.date))
@@ -67,16 +86,34 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
     if (await onSaveExpense({ date, amount: Number(amount), purpose })) setIsModalOpen(false);
   }
 
+  function submitLastYearBalance(event) {
+    event.preventDefault();
+    const balance = Number(lastYearBalanceInput);
+    if (!Number.isFinite(balance) || balance < 0) {
+      setLastYearBalanceError('Enter a valid balance of zero or more.');
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(LAST_YEAR_BALANCE_KEY, String(balance));
+      setLastYearBalance(balance);
+      setLastYearBalanceError('');
+    } catch {
+      setLastYearBalanceError('Unable to save the last year balance to local storage.');
+    }
+  }
+
   async function confirmDeleteExpense() {
     if (await onDeleteExpense(expenseToDelete)) setExpenseToDelete(null);
   }
 
   return (
-    <>
-      <section className="stats-grid">
-        <StatCard label="Total collected" value={money(totalCollected)} detail="Payments recorded" tone="green" />
+    <div className='expenses-container'>
+      <section className="stats-grid expenses-stats-grid">
+        <StatCard label="Total collected" value={money(totalCollected)} detail="Payments recorded" tone="green" view="Expenses" />
+        <StatCard label="Last year balance" value={money(lastYearBalance)} detail="Saved on this device" tone="blue" />
         <StatCard label="Total expenses" value={money(totalExpenses)} detail={`${safeExpenses.length} expenses recorded`} tone="orange" />
-        <StatCard label="Total available" value={money(totalCollected - totalExpenses)} detail="After expenses" tone="blue" />
+        <StatCard label="Total available" value={money(totalAvailable)} detail="Collected + last year balance − expenses" tone="blue" />
       </section>
 
       <section className="panel expenses-panel">
@@ -87,13 +124,29 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
           </div>
           
           <div className="panel-actions" style={{ display: 'flex', gap: '0.5rem' }}>
-            <button className="button button-soft" onClick={() => onDownloadPdf(safeExpenses, totalCollected, totalExpenses)} disabled={busy}>↓ <span className="button-label">Download PDF</span></button>
+            <button className="button button-soft" onClick={() => onDownloadPdf(safeExpenses, totalCollected, totalExpenses, lastYearBalance)} disabled={busy}>↓ <span className="button-label">Download PDF</span></button>
           </div>
         </div>
-        <div className="toolbar fee-toolbar" style={{ display: 'flex', justifyContent: 'space-between', gap: '2.5rem',  }}>
+        <div className="toolbar expenses-toolbar">
           <label className="search-box"><span aria-hidden="true">⌕</span><input value={expenseSearch} onChange={(event) => setExpenseSearch(event.target.value)} placeholder="Search by purpose or date." /></label>
+          <form className="expenses-balance-form" onSubmit={submitLastYearBalance}>
+            <label className="visually-hidden" htmlFor="last-year-balance">Last year balance (₹)</label>
+            <input
+              id="last-year-balance"
+              type="number"
+              min="0"
+              step="0.01"
+              value={lastYearBalanceInput}
+              onChange={(event) => setLastYearBalanceInput(event.target.value)}
+              placeholder="Last year balance (₹)"
+              aria-label="Last year balance in rupees"
+              required
+            />
+            <button className="button button-primary" type="submit">Save last year balance</button>
+          </form>
             <button className="button button-primary" onClick={openExpenseModal}>＋ Add expense</button>
         </div>
+        {lastYearBalanceError && <p className="expenses-balance-error" role="alert">{lastYearBalanceError}</p>}
         <div className="expenses-table-header">
         </div>
 
@@ -213,6 +266,6 @@ export default function ExpensesView({ fees = [], expenses = [], loading, busy, 
           </section>
         </div>
       )}
-    </>
+    </div>
   );
 }
